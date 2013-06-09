@@ -287,6 +287,7 @@
   {:event! (fn
              ([this event-type]
                 (event! this event-type (fn [x] (identity x))))
+
              ([this event-type value-fn]
                 (let [e (event [] (fn [me x] (.-value x)))]
                   (listen this event-type (fn [ev]
