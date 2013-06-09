@@ -283,31 +283,43 @@
                         false))))))
 
 
-(def xml-observable
-  {:event! (fn
-             ([this event-type]
-                (event! this event-type (fn [x] (identity x))))
-
-             ([this event-type value-fn]
-                (let [e (event [] (fn [me x] (.-value x)))]
-                  (listen this event-type (fn [ev]
-                                            (send! e (apply value-fn [ev])))) e)))
-   :events! (fn
-              ([this event-types]
-                 (events! this event-types (fn [x] (identity x))))
-
-              ([this event-types value-fn]
-                 (reduce (fn [acc x] (merge! acc x))
-                         (map (fn [event-type]
-                                (event! this event-type value-fn)) event-types))))})
-
-(extend js/HTMLElement
+(extend-type js/HTMLElement
   IObservable
-  xml-observable)
+  
+  (event! [this event-type]
+          (event! this event-type (fn [x] (identity x))))
 
-(extend js/SVGElement
+  (event! [this event-type value-fn]
+          (let [e (event [] (fn [me x] (.-value x)))]
+            (listen this event-type (fn [ev]
+                                      (send! e (apply value-fn [ev])))) e))
+  
+  (events! [this event-types]
+           (events! this event-types (fn [x] (identity x))))
+
+  (events! [this event-types value-fn]
+           (reduce (fn [acc x] (merge! acc x))
+                   (map (fn [event-type]
+                          (event! this event-type value-fn)) event-types))))
+
+(extend-type js/SVGElement
   IObservable
-  xml-observable)
+  
+  (event! [this event-type]
+          (event! this event-type (fn [x] (identity x))))
+
+  (event! [this event-type value-fn]
+          (let [e (event [] (fn [me x] (.-value x)))]
+            (listen this event-type (fn [ev]
+                                      (send! e (apply value-fn [ev])))) e))
+  
+  (events! [this event-types]
+           (events! this event-types (fn [x] (identity x))))
+
+  (events! [this event-types value-fn]
+           (reduce (fn [acc x] (merge! acc x))
+                   (map (fn [event-type]
+                          (event! this event-type value-fn)) event-types))))
 
 ;;
 ;; Propagation Sentinels
